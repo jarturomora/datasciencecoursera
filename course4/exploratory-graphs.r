@@ -1,5 +1,5 @@
-# This code is using in the video "Exploratory Graphs"
-# The files avgpm25.csv contains data about pollution in the US.
+# This code is used in the lesson "Exploratory Graphs"
+# The file avgpm25.csv contains data about pollution in the US.
 # Coded and commented by @jarturomora
 
 # Setting the drawing area
