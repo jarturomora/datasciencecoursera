@@ -15,13 +15,14 @@ if (!exists("stormdata")) {
   print("Stormdata already exists.")
 }
 
-#######################
-# Data Transformation #
-#######################
+#########################
+# Reponse to Question 1 #
+#########################
 
-# Sum all FATALITIES per EVTYPE
+# Data preparatrion
 stormdata_dt <- data.table(stormdata)
 stormdata_dt$EVTYPE <- toupper(stormdata_dt$EVTYPE)
+# Sum all FATALITIES per EVTYPE
 harmful_events <- stormdata_dt[, sum(FATALITIES), by = EVTYPE]
 harmful_events <- harmful_events[order(-V1),]
 names(harmful_events) = c("EventType", "TotalFatalities")
@@ -30,15 +31,38 @@ harmful_events <- harmful_events[
           substr(harmful_events$EventType, 1, 7) != "SUMMARY")
   ]
 
-################
-# Ploting Data #
-################
+# Ploting Data
 print("Most Harmful Events in the U.S. (by number of fatalities)")
 print(harmful_events)
 
 par(las = 2) # Labels are perpendicular to the axis
 barplot(head(harmful_events$TotalFatalities, 10),
-  main = "Top 10 Harmful Events in the U.S. by Fatalities",
+  main = "Top 10 Harmful Events in the U.S. From 1950 to 2011 (by Fatalities)",
   names.arg = harmful_events$EventType[1:10],
+  ylab = "Number of Fatalities",
   col = rainbow(10)
   )
+
+#########################
+# Reponse to Question 2 #
+#########################
+
+# Data preparation
+exponent <- c('H' = 100, 'K' = 1000, 'M' = 1000000, 'B' = 1000000000)
+if (!exists("economic_impact")) {
+  print("Creating the economic_impact dataframe...")
+  economic_impact <- data.frame(
+                                "EVTYPE" = stormdata_dt$EVTYPE,
+                                "PROMDMG" = stormdata_dt$PROPDMG,
+                                "PROPDMGEXP" = toupper(stormdata_dt$PROPDMGEXP),
+                                "CROPDMG" = stormdata_dt$CROPDMG,
+                                "CROPDMGEXP" = toupper(stormdata_dt$CROPDMGEXP)
+                                )
+  print("Calculating the monetary impact of each damage...")
+  economic_impact$PROPDMGCASH <- economic_impact$PROMDMG * 
+                                exponent[as.character(economic_impact$PROPDMGEXP)]
+  economic_impact$CROPDMGCASH <- economic_impact$CROPDMG *
+                                exponent[as.character(economic_impact$CROPDMGEXP)]
+} else {
+  print("The economic_impact dataframe already exists...")
+}
