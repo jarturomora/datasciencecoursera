@@ -90,3 +90,43 @@ pie(
   main = "Total Money Loss From All The Severe Weather Events (USD)",
   col = c("Yellow", "Orange")
   )
+# Top 10 most costly events by properties and crops
+# Economic Loss in proerties
+economic_impact_prop <- aggregate(
+  economic_impact$PROPDMGCASH ~ economic_impact$EVTYPE, 
+  economic_impact, 
+  sum
+)
+names(economic_impact_prop) <- c("EVTYPE", "PROPDMGCASH")
+economic_impact_prop <- 
+  economic_impact_prop[order(-economic_impact_prop$PROPDMGCASH),]
+# Bar plot with top 10 most costly events
+windows()
+par(las = 2)
+barplot(head(economic_impact_prop$PROPDMGCASH, 10),
+        main = "Top 10 Most Costly Severe Weather Events in the U.S. 
+        From 1950 to 2011 (Properties)",
+        names.arg = economic_impact_prop$EVTYPE[1:10],
+        ylab = "USD",
+        col = rainbow(10)
+)
+
+# Economic Loss in crops
+economic_impact_crop <- aggregate(
+  economic_impact$CROPDMGCASH ~ economic_impact$EVTYPE,
+  economic_impact,
+  sum
+)
+names(economic_impact_crop) <- c("EVTYPE", "CROPDMGCASH")
+economic_impact_crop <- 
+  economic_impact_crop[order(-economic_impact_crop$CROPDMGCASH),]
+# Bar plot with top 10 most costly events
+windows()
+par(las = 2)
+barplot(head(economic_impact_crop$CROPDMGCASH, 10),
+        main = "Top 10 Most Costly Severe Weather Events in the U.S. 
+        From 1950 to 2011 (Crops)",
+        names.arg = economic_impact_crop$EVTYPE[1:10],
+        ylab = "USD",
+        col = rainbow(10)
+)
