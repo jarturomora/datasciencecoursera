@@ -60,9 +60,33 @@ if (!exists("economic_impact")) {
                                 )
   print("Calculating the monetary impact of each damage...")
   economic_impact$PROPDMGCASH <- economic_impact$PROMDMG * 
-                                exponent[as.character(economic_impact$PROPDMGEXP)]
+                              exponent[as.character(economic_impact$PROPDMGEXP)]
   economic_impact$CROPDMGCASH <- economic_impact$CROPDMG *
-                                exponent[as.character(economic_impact$CROPDMGEXP)]
+                              exponent[as.character(economic_impact$CROPDMGEXP)]
 } else {
   print("The economic_impact dataframe already exists...")
 }
+
+# Ploting data
+# A pie char showing the total money loss by properties and crop damage
+windows() # Open a new plot area in windows.
+slices = c(sum(economic_impact$PROPDMGCASH, na.rm = T),
+           sum(economic_impact$CROPDMGCASH, na.rm = T))
+lbls = c("Properties", "Crops")
+pct = round(slices/sum(slices)*100)
+lbls = paste(lbls, 
+             format(slices,
+                    decimal.mark = ".",
+                    big.mark = " ",
+                    small.mark = ",",
+                    small.interval = 3),
+             sep = "\n$ ") # add the money
+lbls = paste(lbls, "\n(")
+lbls = paste(lbls, pct, sep = "")
+lbls = paste(lbls, "%)", sep = "")
+pie(
+  slices,
+  lbls,
+  main = "Total Money Loss From All The Severe Weather Events (USD)",
+  col = c("Yellow", "Orange")
+  )
