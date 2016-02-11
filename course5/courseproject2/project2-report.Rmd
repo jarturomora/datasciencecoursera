@@ -1,0 +1,42 @@
+---
+title: "Severe Weather Events in the U.S. From 1950 to 2011"
+author: "Jose A. Mora Soto"
+output: html_document
+---
+
+# Synopsis
+Severe weather events are one of the mayor disasters in the U.S. provoking several
+mortal victims and mayor economic losses. This report summarizes the information
+from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database
+showing information about the most fatal weather events in terms of mortality
+and economic consequences.
+
+# Data Processing
+
+## Data Source
+The data used for this report is publicly offered by NOAA for any analysis and
+research purposes; the specific data for this report contains information about
+the severe weather events that occured in the U.S. from 1950 to November 2011,
+this data file was provided as a resource in the **Reproducibe Research** course
+from the Jonh Hopkins University at Coursera for the second course project, it
+can be downloaded from this [web link](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2).
+
+## Data Preparation
+For practicity the data file was downloaded and uncompresed using the operating
+system's tools and renamed as _StormData.csv_.
+
+The first step to conduct the analysis was to load the database into a data frame
+as follows:
+
+
+```{r}
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
