@@ -1,7 +1,10 @@
 ---
 title: "Severe Weather Events in the U.S. From 1950 to 2011"
 author: "Jose A. Mora Soto"
-output: html_document
+output: 
+  html_document: 
+    number_sections: yes
+    toc: yes
 ---
 
 ```{r libraries}
@@ -153,9 +156,9 @@ barplot(head(harmful_events$TotalFatalities, 10),
   ylab = "Number of Fatalities",
   col = rainbow(10)
   )
-set.caption("Figure 1: Most Harmful Events in the U.S. (by number of
-            fatalities)")
 ```
+
+__Figure 1: Most Harmful Events in the U.S. (by number of fatalities)__
 
 ## Question 2:  __Across the United States, which types of events have the
 greatest economic consequences?__
@@ -187,9 +190,9 @@ pie(
   main = "Total Economic Loss From All The Severe Weather Events (USD)",
   col = c("Yellow", "Orange")
   )
-set.caption("Figure 2: Total Economic Loss From All The Severe Weather Events
-            (USD)")
 ```
+
+__Figure 2: Total Economic Loss From All The Severe Weather Events (USD)__
 
 Finally in Figure 3 a bar chart is presented in Figure 3 to present the top 10
 most costly severe events in terms of losses in properties.
@@ -203,13 +206,13 @@ barplot(head(economic_impact_prop$PROPDMGCASH, 10),
         ylab = "USD",
         col = rainbow(10)
 )
-set.caption("Figure 3: Top 10 Most Costly Severe Weather Events in the U.S.
-            From 1950 to 2011 (Properties)")
 ```
+
+__Figure 3: Top 10 Most Costly Severe Weather Events in the U.S. From 1950 to
+2011 (Properties)__
 
 # Full Code to Reproduce this Analysis
 If you want to see and play yourself with the code I made to create this report,
-you can download it at my [GitHub code repository for this project]
-(https://github.com/jarturomora/datasciencecoursera/tree/master/course5/courseproject2).
+you can download it at my [GitHub code repository for this project](https://github.com/jarturomora/datasciencecoursera/tree/master/course5/courseproject2).
 
 In case you want to contact me, [feel free to contact me](https://about.me/jarturomora).
