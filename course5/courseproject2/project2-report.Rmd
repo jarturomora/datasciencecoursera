@@ -4,12 +4,19 @@ author: "Jose A. Mora Soto"
 output: html_document
 ---
 
+```{r libraries}
+# Libraries needed
+library(data.table)
+library(pander)
+```
+
+
 # Synopsis
-Severe weather events are one of the mayor disasters in the U.S. provoking several
-mortal victims and mayor economic losses. This report summarizes the information
-from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database
-showing information about the most fatal weather events in terms of mortality
-and economic consequences.
+Severe weather events are one of the mayor disasters in the U.S. provoking
+several mortal victims and mayor economic losses. This report summarizes the
+information from the U.S. National Oceanic and Atmospheric Administration's
+(NOAA) storm database showing information about the most fatal weather events in
+terms of mortality and economic consequences.
 
 # Data Processing
 
@@ -21,22 +28,188 @@ this data file was provided as a resource in the **Reproducibe Research** course
 from the Jonh Hopkins University at Coursera for the second course project, it
 can be downloaded from this [web link](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2).
 
-## Data Preparation
+## First Steps Processing the Data
 For practicity the data file was downloaded and uncompresed using the operating
 system's tools and renamed as _StormData.csv_.
 
-The first step to conduct the analysis was to load the database into a data frame
-as follows:
+The first step to conduct the analysis was to load the database into a data
+frame as follows:
 
-
-```{r}
-
+```{r data_load, cache = T}
+# The data will be retrieved into the "stormdata" data frame, since the data
+# file is big, we check if it has already loaded.
+if (!exists("stormdata")) {
+  stormdata <- read.csv("StormData.csv")
+}
 ```
 
-You can also embed plots, for example:
+Once the data was loaded in the __stormdata__ dataframe, some data preparation
+was done by creating some data structures to manipulate the data to create the
+report. The most relevant data structures defined were the following:
 
-```{r, echo=FALSE}
-plot(cars)
+* __stormdata_dt__: A data table structure (it needs the __data.table__ package)
+  to store all the data from the original file and have extra funcitions to
+  clean and prepare the data.
+* __harmful_events__: A data table structure to store the data needed to answer
+  Question 1 of the project project.
+* __economic_impact__: A data frame structure to store the data needed to answer
+  Question 2 of the course project.
+
+## Data Processing for Question 1
+In order to answer Question 1 __Across the United States, which types of events
+(as indicated in the **EVTYPE** variable) are most harmful with respect to
+population health?__ it has been considered that the most harmful situation is
+dead, so the number of fatalities per severe weather event were used as
+indicator. The data was retrieved and stored in the __harmful_events__ data
+table as follows:
+
+```{r data_preparation_question_1}
+# Data preparatrion
+stormdata_dt <- data.table(stormdata)
+stormdata_dt$EVTYPE <- toupper(stormdata_dt$EVTYPE)
+# Sum all FATALITIES per EVTYPE
+harmful_events <- stormdata_dt[, sum(FATALITIES), by = EVTYPE]
+harmful_events <- harmful_events[order(-V1),]
+names(harmful_events) = c("EventType", "TotalFatalities")
+harmful_events <- harmful_events[
+  which(harmful_events$TotalFatalities > 0 & 
+          substr(harmful_events$EventType, 1, 7) != "SUMMARY")
+  ]
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Data Processing for Question 2
+In order to ansquer Question 2 __Across the United States, which types of events
+have the greatest economic consequences?__ the data was retrieved and stored in
+the __economic_impact__ data frame; later the economic loss was calculated by
+losses in crops as well as in properties as it is shown in the code bellow.
+
+```{r data_preparation_question_2, cache = T}
+# Data preparation
+exponent <- c('H' = 100, 'K' = 1000, 'M' = 1000000, 'B' = 1000000000)
+if (!exists("economic_impact")) {
+ # Creating the economic_impact dataframe
+  economic_impact <- data.frame(
+                                "EVTYPE" = stormdata_dt$EVTYPE,
+                                "PROMDMG" = stormdata_dt$PROPDMG,
+                                "PROPDMGEXP" = toupper(stormdata_dt$PROPDMGEXP),
+                                "CROPDMG" = stormdata_dt$CROPDMG,
+                                "CROPDMGEXP" = toupper(stormdata_dt$CROPDMGEXP)
+                                )
+  # Calculating the monetary impact of each damage
+  economic_impact$PROPDMGCASH <- economic_impact$PROMDMG * 
+                              exponent[as.character(economic_impact$PROPDMGEXP)]
+  economic_impact$CROPDMGCASH <- economic_impact$CROPDMG *
+                              exponent[as.character(economic_impact$CROPDMGEXP)]
+
+# Top 10 most costly events by properties and crops
+# Economic Loss in properties
+economic_impact_prop <- aggregate(
+  economic_impact$PROPDMGCASH ~ economic_impact$EVTYPE, 
+  economic_impact, 
+  sum
+)
+names(economic_impact_prop) <- c("EVTYPE", "PROPDMGCASH")
+economic_impact_prop <- 
+  economic_impact_prop[order(-economic_impact_prop$PROPDMGCASH),]
+
+# Economic Loss in crops
+economic_impact_crop <- aggregate(
+  economic_impact$CROPDMGCASH ~ economic_impact$EVTYPE,
+  economic_impact,
+  sum
+)
+names(economic_impact_crop) <- c("EVTYPE", "CROPDMGCASH")
+economic_impact_crop <- 
+  economic_impact_crop[order(-economic_impact_crop$CROPDMGCASH),]
+}
+```
+
+# Results
+Once the data was processed it is possible to present some results about the
+impact of the severe weather events in the U.S.
+
+## Question 1 __Across the United States, which types of events
+(as indicated in the **EVTYPE** variable) are most harmful with respect to
+population health?__
+
+Bellow in Table 1 a list of the top 10 most harmful severe weather events in
+the U.S. is presented, as can be seen __Tornados__ are the events with the
+greater number of fatalities from 1950 to 2011.
+
+```{r table_top_10_fatal_events, cache = T}
+panderOptions("digits", 2)
+set.caption("Table 1: Most Harmful Events in the U.S.
+            (by number of fatalities)")
+pander(head(harmful_events, 10))
+```
+
+Following a bar plot is presented to graphicaly depict the results from Table 1.
+
+```{r barplot_top_10_fatal_events}
+par(las = 2) # Labels are perpendicular to the axis
+barplot(head(harmful_events$TotalFatalities, 10),
+  main = "Top 10 Harmful Events in the U.S. From 1950 to 2011 (by Fatalities)",
+  names.arg = harmful_events$EventType[1:10],
+  ylab = "Number of Fatalities",
+  col = rainbow(10)
+  )
+set.caption("Figure 1: Most Harmful Events in the U.S. (by number of
+            fatalities)")
+```
+
+## Question 2:  __Across the United States, which types of events have the
+greatest economic consequences?__
+
+To answer this question the data was splited in two dimensions, one to analyze
+the economic loss in crops and another to analyze the economic loss in
+properties (as presented above in the the __Data Processing__ section). Next in
+Figure 2 a pie chart showing the percentage of the total economic losses that
+were suffered in crops and propierties is presented.
+
+```{r pie_total_economic_loss}
+slices = c(sum(economic_impact$PROPDMGCASH, na.rm = T),
+           sum(economic_impact$CROPDMGCASH, na.rm = T))
+lbls = c("Properties", "Crops")
+pct = round(slices/sum(slices)*100)
+lbls = paste(lbls, 
+             format(slices,
+                    decimal.mark = ".",
+                    big.mark = " ",
+                    small.mark = ",",
+                    small.interval = 3),
+             sep = "\n$ ") # add the money
+lbls = paste(lbls, "\n(")
+lbls = paste(lbls, pct, sep = "")
+lbls = paste(lbls, "%)", sep = "")
+pie(
+  slices,
+  lbls,
+  main = "Total Economic Loss From All The Severe Weather Events (USD)",
+  col = c("Yellow", "Orange")
+  )
+set.caption("Figure 2: Total Economic Loss From All The Severe Weather Events
+            (USD)")
+```
+
+Finally in Figure 3 a bar chart is presented in Figure 3 to present the top 10
+most costly severe events in terms of losses in properties.
+
+```{r barplot_top_10_most_costly_events_properties}
+par(las = 2)
+barplot(head(economic_impact_prop$PROPDMGCASH, 10),
+        main = "Top 10 Most Costly Severe Weather Events in the U.S. 
+        From 1950 to 2011 (Properties)",
+        names.arg = economic_impact_prop$EVTYPE[1:10],
+        ylab = "USD",
+        col = rainbow(10)
+)
+set.caption("Figure 3: Top 10 Most Costly Severe Weather Events in the U.S.
+            From 1950 to 2011 (Properties)")
+```
+
+# Full Code to Reproduce this Analysis
+If you want to see and play yourself with the code I made to create this report,
+you can download it at my [GitHub code repository for this project]
+(https://github.com/jarturomora/datasciencecoursera/tree/master/course5/courseproject2).
+
+In case you want to contact me, [feel free to contact me](https://about.me/jarturomora).
