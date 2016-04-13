@@ -32,5 +32,8 @@ vignettes/*.pdf
 *.rdb
 *.rdx
 
+### Temp Files ###
+*~
+
 ### Project Files ###
-courseproject2/StormData.csv
+
