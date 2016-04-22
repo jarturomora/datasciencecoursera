@@ -1,0 +1,176 @@
+---
+title: "Quiz 2 - Rationale"
+author: "Jose Arturo Mora Soto"
+date: "April 21, 2016"
+output: html_document
+---
+
+## Remarks
+I made this document for my own understanding of the responses thayt I gave to
+the questions of this quiz.
+
+## Question 1
+What is the variance of the distribution of the average an IID draw of _n_
+observations from a population with mean $\mu$.
+
+### Answer 1
+From the slides of topic 7 "Variability", on slide 9 it is explained that the
+variance of the sample ($S^2$) from a population can be calculated using the
+population variance ($\sigma^2$) using the formula: 
+$$S^2 = \frac{\sigma^2}{n}$$
+
+## Question 2
+Suppose that diastolic blood pressures (DBPs) for men aged 35-44 are normally
+distributed with a mean of 80 (mm Hg) and a standard deviation of 10. About what
+is the probability that a random 35-44 year old has a DBP less than 70?
+
+### Answer 2
+Since the data is normally distributed we can calculate this probability using
+the ```pnorm()``` function as follows:
+
+``` {r}
+dbp_quantile = 70
+dbp_mean = 80
+dbp_sd = 10
+pnorm(dbp_quantile, dbp_mean, dbp_sd)
+```
+
+## Question 3
+Brain volume for adult women is normally distributed with a mean of about
+1,100 cc for women with a standard deviation of 75 cc. About what brain volume
+represents the 95th percentile?
+
+### Answer 3
+Using the given information about the scenario, we deduce that we need to find
+the quantile that represents the 95th percentile; to do that, we can use the
+```qnorm()``` function as follows:
+
+```{r}
+brain_vol_percentile = 0.95
+brain_vol_mean = 1100
+brain_vol_sd = 75
+qnorm(brain_vol_percentile, brain_vol_mean, brain_vol_sd)
+```
+
+## Question 4
+Refer to the previous question. Brain volume for adult women is about 1,100 cc
+for women with a standard deviation of 75 cc. Consider the sample mean of 100
+random adult women from this population. Around what is the 95th percentile of
+the distribution of that sample mean?
+
+### Answer 4
+Now we have to estimate the quantile for a sample of 100 women, so we need to
+find the standard deviation of the population; we will use the formula given
+in **Answer 1** for that
+
+```{r}
+sample_size = 100
+population_sd = 75
+sample_sd = population_sd / sqrt(sample_size)
+```
+
+Now we will calculate the quantile using the ```qnorm()``` function.
+
+```{r}
+qnorm(brain_vol_percentile, brain_vol_mean, sample_sd)
+```
+
+## Question 5
+You flip a fair coin 5 times, about what's the probability of getting
+4 or 5 heads?
+
+### Answer 5
+This is a Bernoulli distribution problem since we have a __X__ with a 
+binary outcome, 1 for head, 0 for tail. We have to keep in mind that the
+propability of having a head (or tail) is 50%. We will suppose that X is a
+[binomial random variable](https://onlinecourses.science.psu.edu/stat414/node/68),
+so the probability will be given by the formula:
+$$P(X = x) = (_{x}^{n})p^{x}(1-p)^{n-x}$$
+
+The probability of having 4 or 5 heads will be the sum of the probability of
+having 4 heads plus 5 heads as follows:
+
+```{r}
+p_4heads <- choose(5,4) * 0.5^4 * (1 - 0.5)^(5 - 4)
+p_5heads <- choose(5,5) * 0.5^5 * (1 - 0.5)^(5 - 5)
+p_4and5 <- p_4heads + p_5heads
+round(p_4and5, 2)
+```
+
+Since we said __X__ is binomial, we can also calculate the probability using
+the ```pbinom()``` function as follows:
+
+```{r}
+p <- 0.5 # Probability of having a head
+n <- 5 # Number of trials (coin flips)
+head_quantile <- 3 # 4 or 5 out of 5
+p_4and5 <- pbinom(head_quantile, n, p, lower.tail = FALSE)
+round(p_4and5, 2)
+```
+
+## Question 6
+The respiratory disturbance index (RDI), a measure of sleep disturbance, for a
+specific population has a mean of 15 (sleep events per hour) and a standard
+deviation of 10. **They are not normally distributed**. Give your best estimate
+of the probability that a sample mean RDI of 100 people is between 14 and 16
+events per hour?
+
+### Answer 6
+According to The Central Limit Theorem (CLT) for a large enough sample size
+__n__, the distribution of the sample mean $\bar x$ will approach a normal
+distribution, so that since we are talking here about the RDI of all the people
+we will suppose that the sample mean will be the population mean and that it's
+normal (will tend to be). So we can calculate the probability using the
+```pnorm()``` function as follows:
+
+```{r}
+n = 100
+rdi_mu = 15
+rdi_sigma = 10 / sqrt(n) # This is the sample's standard error
+
+# Probability of having 14 events per hour
+# (area to the left of 14 in the bell curve)
+prob14 <- pnorm(14, rdi_mu, rdi_sigma)
+
+# Probability of having 16 events per hour
+# (area to the left of 16 in the bell curve)
+prob16 <- pnorm(16, rdi_mu, rdi_sigma)
+
+prob_14and16 <- prob16 - prob14
+round(prob_14and16, 2)
+```
+
+## Question 7
+Consider a standard uniform density. The mean for this density is 0.5 and the
+variance is 1/12. You sample 1,000 observations from this distribution and take
+the sample mean, what value would you expect it to be near?
+
+### Answer 7
+According to the Law of Large Numbers and the Central Limit Theorem the sample
+mean would be the population mean: **0.5**. However let's probe it using R.
+
+```{r}
+n <- 1000
+quant <- 0.5
+pop_mu <- 0.5
+pop_var <- 1/12
+sam_sd <- sqrt(1/12) / sqrt(n)
+
+qnorm(quant, pop_mu, sam_sd)
+```
+
+## Question 8
+The number of people showing up at a bus stop is assumed to be Poisson with
+a mean of 5 people per hour. You watch the bus stop for 3 hours. About what’s
+the probability of viewing 10 or fewer people?
+
+### Answer 8
+
+```{r}
+t <- 3
+mu <- 5 # Since in a Poisson distribution lambda = mean = variance
+quant <- 10
+
+round(ppois(quant, lambda = mu * t), 2)
+```
+

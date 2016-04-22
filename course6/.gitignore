@@ -35,5 +35,8 @@ vignettes/*.pdf
 ### Temp Files ###
 *~
 
-### Project Files ###
+### IPythonNotebook ###
+# Temporary data
+.ipynb_checkpoints/
 
+### Project Files ###
