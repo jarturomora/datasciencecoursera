@@ -1,0 +1,69 @@
+---
+title: "Statististical Inference Course Project - Part 2"
+author: "Jose Arturo Mora Soto"
+date: "May 10, 2016"
+output: pdf_document
+---
+
+# Overview
+In this project we are going to analyze the __ToothGrowth__ data in the R datasets package. The data in this dataset corresponds to the effect of Vitamin C on tooth growth in guinea pigs. The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, (1) orange juice (coded as __OJ__) or (2) ascorbic acid (a form of vitamin C and coded as __VC__).
+
+## Data Format
+A data frame with 60 observations on 3 variables.
+1. __len__ 	numeric 	Tooth length
+2. __supp__ 	factor 	Supplement type (VC or OJ).
+3. __dose__ 	numeric 	Dose in milligrams/day 
+
+# Load the ToothGrowth Dataset
+In order to use the __ToothGrowht__ dataset it is necesary to use the __datasets__ library.
+```{r}
+library(datasets)
+
+# Load ToothGrowth dataset
+data <- ToothGrowth
+```
+
+# Basic Exploratory Data Aanalyses on the ToothGrowth Dataset
+Now we will perform some exploratory data analyses using the __dose__ data.
+```{r}
+# Convert dose to factor
+data$dose <- as.factor(data$dose)
+
+# Contingency table with doses per supplement type
+library(pander)
+panderOptions("digits", 2)
+set.caption("Doses per Supplement Type")
+pander(table(data$dose, data$supp))
+```
+
+Analysis of toot lenth according to the supplement type given to the guinea pigs.
+```{r fig.width=5, fig.height=3}
+library(ggplot2)
+
+ggplot(data=data, aes(x=dose, y=len, fill=supp)) + geom_bar(stat="identity",) + 
+  facet_grid(. ~ supp) + xlab("Dose in miligrams") + ylab("Tooth length") + 
+  guides(fill=guide_legend(title="Supplement type"))
+```
+
+Toot length Mean analyses of the the two supplement types
+```{r fig.width=5, fig.height=3}
+ggplot(aes(x=supp, y=len), data=data) + geom_boxplot(aes(fill=supp)) + 
+  xlab("Supplement type") + ylab("Tooth length") +
+  guides(fill=guide_legend(title="Supplement type"))
+```
+
+# Basic Summary of the Data
+```{r}
+set.caption("Summary Statistics of the Tooth Growth Dataset")
+pander(summary(data))
+```
+
+# Confidence Intervals and/or Hypothesis Tests to Compare Tooth Growth by Supplemeny Type and Dose
+```{r}
+t.test(len ~ supp, data=data)
+```
+
+# Conclusions
+Null hypothesis can not be rejected as confindence intervals contain zero and p-value is 0.06.
+
+Supplement types seems to have no impact on Tooth growth.
